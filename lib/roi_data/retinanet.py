@@ -72,6 +72,7 @@ def get_retinanet_blob_names(is_training=True):
                 'retnet_roi_bbox_targets_' + suffix,
                 'retnet_roi_fg_bbox_locs_' + suffix,
             ]
+    #logger.info("blob_names: {}".format(blob_names))
     return blob_names
 
 
