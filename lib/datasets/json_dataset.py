@@ -56,7 +56,7 @@ class JsonDataset(object):
     def __init__(self, name):
         assert name in DATASETS.keys(), \
             'Unknown dataset name: {}'.format(name)
-        assert os.path.exists(DATASETS[name][IM_DIR]), \
+        assert os.path.exists(DATASETS[name][IM_DIR]) or DATASETS[name][IM_DIR] == '', \
             'Image directory \'{}\' not found'.format(DATASETS[name][IM_DIR])
         assert os.path.exists(DATASETS[name][ANN_FN]), \
             'Annotation file \'{}\' not found'.format(DATASETS[name][ANN_FN])

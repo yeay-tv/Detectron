@@ -126,6 +126,8 @@ def filter_for_training(roidb):
         if cfg.MODEL.KEYPOINTS_ON:
             # If we're training for keypoints, exclude images with no keypoints
             valid = valid and entry['has_visible_keypoints']
+        if not valid:
+            logger.info("invalid entry: {}".format(entry))
         return valid
 
     num = len(roidb)
