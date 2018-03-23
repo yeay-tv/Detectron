@@ -27,14 +27,12 @@ from __future__ import unicode_literals
 from collections import defaultdict
 import argparse
 import cv2  # NOQA (Must import before importing caffe2 due to bug in cv2)
-import glob
 import logging
 import os
 import sys
 import time
 import json
 import errno
-import pickle
 import random
 
 from caffe2.python import workspace
@@ -42,7 +40,7 @@ from caffe2.python import workspace
 from core.config import assert_and_infer_cfg
 from core.config import cfg
 from core.config import merge_cfg_from_file
-from utils.timer import Timer
+from utils.io import cache_url
 import core.test_engine as infer_engine
 from datasets.json_dataset import JsonDataset
 import utils.c2 as c2_utils
