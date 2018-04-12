@@ -85,6 +85,43 @@ def find_best_frames(jsondata, N = 5, thresh=0.0, criteria="prob", smooth=False)
 
     return n_top_idx
 
+def find_best_frames_each_class(jsondata, thresh=0.0, criteria="prob*sqrt(area)", smooth=False):
+    """Find frame which has the best example of each in the videos.
+
+        We subjectively define "best" as the highest probability of the class times
+        the square root of the area of the
+
+        Arguments:
+            N: (int) number of best frames to find
+            criteria: (str) type of criteria to use
+            smooth: (bool) smooth amounts across frames
+    """
+    num_frames = jsondata["video_fcnt"]
+    num_classes = len(jsondata["classesInDS"])
+    vid_area = np.array(jsondata["video_dim"]).prod()
+    items = jsondata["items"]
+    top_classes = np.zeros(shape=(num_classes, 2), dtype=float) # (classes, (frame_index, score = prob * sqrt of area))
+
+    for item in items:
+        frame_index = item[0] - 1
+        cls_id = item[1]
+        prob = item[2]
+        bbox = item[3]
+        # skip if probability is below the threshold
+        if thresh > prob:
+            continue
+
+        area = np.float((bbox[2] - bbox[0]) * (bbox[3] - bbox[1])) / vid_area
+        score_curr = np.float(prob) * np.sqrt(area)
+        score_top = top_classes[cls_id, 1]
+        if score_curr > score_top:
+            top_classes[cls_id, 0] = frame_index
+            top_classes[cls_id, 1] = score_curr
+
+
+    return top_classes[:, 0].astype(np.int).tolist()
+
+
 def smoother(arr, win_len=9):
     win = np.hanning(win_len+2)[1:-1]  # numpy windows have zeros on end
     if arr.ndim > 1:

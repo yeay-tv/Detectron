@@ -110,14 +110,14 @@ def parse_args():
         action="store_true"
     )
     parser.add_argument(
-        '--rotate',
-        dest='rotate',
-        help='rotate image',
+        '--create-vis',
+        help='output visuals for development',
         action="store_true"
     )
     parser.add_argument(
-        '--create-vis',
-        help='output visuals for development',
+        '--rotate',
+        dest='rotate',
+        help='rotate image',
         action="store_true"
     )
     parser.add_argument(
@@ -133,13 +133,18 @@ def parse_args():
         default="https://d9w0wfiu0u1pg.cloudfront.net"
     )
     parser.add_argument(
-        '--clobber',
-        help='overwrite previous predictions if they are found',
+        '--shuffle',
+        help='shuffle manifest before doing classification',
         action="store_true"
     )
     parser.add_argument(
-        '--shuffle',
-        help='shuffle manifest before doing classification',
+        '--id-in-filename',
+        help='get id from the filename rather than the folder structure',
+        action="store_true"
+    )
+    parser.add_argument(
+        '--clobber',
+        help='overwrite previous predictions if they are found',
         action="store_true"
     )
     return parser.parse_args()
@@ -179,11 +184,11 @@ def main(args):
         input_bn = os.path.basename(video_fn)
         input_ext = os.path.splitext(input_bn)[1]
         input_bn_noext = input_bn.replace(input_ext, "")
-        if "_" in input_src:
-            video_id = input_bn.split("_", 1)[0]
-        elif True:
+        if not args.id_in_filename:
             input_dirs = os.path.dirname(input_src).split("/")
             video_id = input_dirs[-1]
+        elif "_" in input_src:
+            video_id = input_bn.split("_", 1)[0]
         else:
             video_id = "noid"
         json_filename = os.path.join(args.output_dir, video_id + '.json')
@@ -251,8 +256,8 @@ def main(args):
             # video classification complete
             output_json["classifiedAt"] = time.strftime("%Y-%m-%jT%H:%M:%S%Z")
             #print(type(cls_boxes), len(cls_boxes), output_json["items"][0], frame_items)
-            top_N_frames = yeay_utils.find_best_frames(output_json)
-            output_json["top_N_frames"] = top_N_frames
+            output_json["top_N_frames"] = yeay_utils.find_best_frames(output_json)
+            output_json["top_frames_each_class"] = yeay_utils.find_best_frames_each_class(output_json)
             # release opencv devices
             cap_dev.release()
             if args.output_video:
