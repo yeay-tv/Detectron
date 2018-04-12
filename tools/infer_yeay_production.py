@@ -156,7 +156,8 @@ def main(args):
     logger.info(cv2.__version__)
     merge_cfg_from_file(args.cfg)
     cfg.NUM_GPUS = 1
-    assert_and_infer_cfg()
+    assert_and_infer_cfg(cache_urls=False)
+    args.weights = cache_url(args.weights, cfg.DOWNLOAD_CACHE)
     model = infer_engine.initialize_model_from_cfg(args.weights)
     ds_name = args.dataset
     ds = JsonDataset(ds_name)
