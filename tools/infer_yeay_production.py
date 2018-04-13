@@ -268,7 +268,18 @@ def main(args):
                 json.dump(output_json, open(json_filename, 'w'))
             # visual output
             if args.create_vis:
-                vis_utils.vis_json_classes(json_filename, ds.classes, args.thresh, os.path.join(args.output_dir, 'output.png'))
+                frames_lists = [output_json["top_N_frames"], output_json["top_frames_each_class"][0]]
+                prefixes = ["top_N", "top_each_class"]
+                kfd = {}
+                for a_i, b_i in zip(frames_lists, prefixes):
+                    for a_i_j in a_i:
+                        if a_i_j == -1:
+                            continue
+                        if a_i_j in kfd:
+                            kfd[a_i_j].add(b_i)
+                        else:
+                            kfd[a_i_j] = set([b_i])
+                vis_utils.vis_capture_frames_lists(output_json, kfd, crop_bboxes=True, output_dir=args.output_dir)
 
             #cls_boxes_reconstructed = yeay_utils.list2clsboxes(frame_items, ds.classes)
             #print(len(cls_boxes), cls_boxes[:5])

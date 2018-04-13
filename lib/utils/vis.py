@@ -486,3 +486,30 @@ def crop_top_box(img, bbox, output_dir="/tmp", score=None, x1y1x2y2=True):
     score_str = "" if score is None else "_{}".format(score)
     output_filename = os.path.join(output_dir, "crop{}.jpg".format(score_str))
     cv2.imwrite(output_filename, img_cropped)
+
+def vis_capture_frames_lists(output_json, key_frames_dict, crop_bboxes=False, output_dir='.'):
+    vid = output_json["video_id"]
+    video_loc = output_json["video_loc"]
+    video_frames_dir = os.path.join(output_dir, vid)
+    if not os.path.exists(video_frames_dir):
+        os.makedirs(video_frames_dir)
+    cap = cv2.VideoCapture(video_loc)
+    if crop_bboxes:
+        tcf, tcf_bboxes = output_json["top_frames_each_class"]
+
+    for frame_num, prefixes in key_frames_dict.items():
+        cap.set(cv2.CAP_PROP_POS_FRAMES, frame_num)
+        ret, frame = cap.read()
+        if ret:
+            if crop_bboxes:
+                cls_ids_in_frame = [i for i, f in enumerate(tcf) if f == frame_num]
+                for i in cls_ids_in_frame:
+                    bbox = [int(x) for x in tcf_bboxes[i]]
+                    x1, y1, x2, y2 = bbox
+                    frame_crop = frame[y1:y2, x1:x2]
+                    output_filename = os.path.join(video_frames_dir, "{}_cropped_{:03d}_{}.jpg".format(vid, i, frame_num))
+                    cv2.imwrite(output_filename, frame_crop)
+            for prefix in prefixes:
+                output_filename = os.path.join(video_frames_dir, "{}_{}_{}.jpg".format(vid, prefix, frame_num))
+                cv2.imwrite(output_filename, frame)
+    cap.release()
