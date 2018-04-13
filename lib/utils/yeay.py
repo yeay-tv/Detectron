@@ -101,6 +101,9 @@ def find_best_frames_each_class(jsondata, thresh=0.0, criteria="prob*sqrt(area)"
     vid_area = np.array(jsondata["video_dim"]).prod()
     items = jsondata["items"]
     top_classes = np.zeros(shape=(num_classes, 2), dtype=float) # (classes, (frame_index, score = prob * sqrt of area))
+    top_classes[:, 0] = -1.  # so we know which classes weren't found
+
+    top_bboxes = [None] * num_classes
 
     for item in items:
         frame_index = item[0] - 1
@@ -117,9 +120,10 @@ def find_best_frames_each_class(jsondata, thresh=0.0, criteria="prob*sqrt(area)"
         if score_curr > score_top:
             top_classes[cls_id, 0] = frame_index
             top_classes[cls_id, 1] = score_curr
+            top_bboxes[cls_id] = bbox
 
 
-    return top_classes[:, 0].astype(np.int).tolist()
+    return top_classes[:, 0].astype(np.int).tolist(), top_bboxes
 
 
 def smoother(arr, win_len=9):
