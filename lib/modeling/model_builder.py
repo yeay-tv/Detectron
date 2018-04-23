@@ -167,7 +167,7 @@ def build_generic_detection_model(
         """
         # Add LaPlacianBlurDetection
         lp_blobs = build_laplacian(model)
-        for b in c2c2_utils.BlobReferenceList(lp_blobs):
+        for b in c2_utils.BlobReferenceList(lp_blobs):
             model.StopGradient(b, b)
 
         # Add the conv body (called "backbone architecture" in papers)
@@ -416,7 +416,6 @@ def add_inference_inputs(model):
             for blob_in in op.input:
                 if not workspace.HasBlob(blob_in):
                     workspace.CreateBlob(blob_in)
-
     create_input_blobs_for_net(model.net.Proto())
     if cfg.MODEL.MASK_ON:
         create_input_blobs_for_net(model.mask_net.Proto())

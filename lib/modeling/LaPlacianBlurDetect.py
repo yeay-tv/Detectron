@@ -32,20 +32,33 @@ from caffe2.python import (
 
 import numpy as np
 
-laplacian_kernel = np.zeros((1, 1, 3, 3))
+laplacian_kernel = np.zeros((1, 1, 3, 3), dtype=np.float32)
 laplacian_kernel[:,:, [0, 2], [1]] = 1.
 laplacian_kernel[:,:, [1], [0, 2]] = 1.
 laplacian_kernel[:,:, 1, 1] = -4.
 
+def get_lpm_weights(layer_name):
+    if "mean_conv_w" in layer_name:
+        return np.ones((1, 3, 1, 1), dtype=np.float32) / 3.
+    elif "lp_conv_w" in layer_name:
+        return laplacian_kernel
+    else:
+        return None
+
 def build_laplacian(model):
     blobs = []
-    mean_conv = brew.conv(model, "data", "mean_conv", 3, 1, 1, weight_init=('ConstantFill', {"value": 1. / 3.}), lr_mult=0.)
-    lp_conv = brew.conv(model, "mean_conv", "lp_conv", 1, 1, 3, weight_init=('GivenTensorFill', {"values": laplacian_kernel}), lr_mult=0.)
-    blobs.extend([mean_conv, lp_conv])
+    mean_conv = brew.conv(model, "data", "mean_conv", 3, 1, 1,
+                          lr_mult=0., no_bias=True,
+                          weight_init=('ConstantFill', {"value": 1. / 3.}))
+    blobs.append(mean_conv)
+    lp_conv = brew.conv(model, "mean_conv", "lp_conv", 1, 1, 3,
+                        lr_mult=0., no_bias=True,
+                        weight_init=('GivenTensorFill', {"values": laplacian_kernel}))
+    blobs.append(lp_conv)
     return blobs
 
 def create_laplacian():
     lpm = model_helper.ModelHelper(name="laplacianblur", arg_scope={"order": "NCHW"})
-    brew.conv(lpm, "data", "mean_conv", 3, 1, 1, weight_init=('ConstantFill', {"value": 1. / 3.}))
-    brew.conv(lpm, "mean_conv", "lp_conv", 1, 1, 3, weight_init=('GivenTensorFill', {"values": laplacian_kernel}))
+    brew.conv(lpm, "data", "mean_conv", 3, 1, 1, weight_init=('ConstantFill', {"value": 1. / 3.}), no_bias=True)
+    brew.conv(lpm, "mean_conv", "lp_conv", 1, 1, 3, weight_init=('GivenTensorFill', {"values": laplacian_kernel}), no_bias=True)
     return lpm

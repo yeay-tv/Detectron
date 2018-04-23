@@ -105,6 +105,11 @@ def im_detect_all(model, im, box_proposals, timers=None):
     else:
         cls_keyps = None
 
+    if True:
+        lp_conv_out = workspace.FetchBlob(core.ScopedName("lp_conv"))
+        blur_score = np.var(lp_conv_out, axis=(2,3))
+        logger.info(blur_score)
+
     return cls_boxes, cls_segms, cls_keyps
 
 
