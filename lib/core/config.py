@@ -975,6 +975,12 @@ __C.CLUSTER = AttrDict()
 # Flag to indicate if the code is running in a cluster environment
 __C.CLUSTER.ON_CLUSTER = False
 
+# ---------------------------------------------------------------------------- #
+# Yeay options
+# ---------------------------------------------------------------------------- #
+__C.YEAY = AttrDict()
+# Flag to indicate if the code is running in a cluster environment
+__C.YEAY.BLUR_DETECT = False
 
 # ---------------------------------------------------------------------------- #
 # Deprecated options

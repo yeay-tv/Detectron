@@ -216,6 +216,7 @@ def main(args):
                 "video_fcnt": input_fcnt,
                 "classifiedAt": None,
                 "classesInDS": ds.classes,
+                "blur_scores": [],
                 #"classifierConfig": args.cfg,
                 #"classifierWeights": args.weights,
                 "items":[],
@@ -232,13 +233,16 @@ def main(args):
                         frame = cv2.transpose(frame)
                     # do actual inference with network
                     with c2_utils.NamedCudaScope(0):
-                        cls_boxes, cls_segms, cls_keyps = infer_engine.im_detect_all(
+                        cls_boxes, cls_segms, cls_keyps, bs = infer_engine.im_detect_yeay(
                             model, frame, None
                         )
                     # add box info to json dict to be saved later
                     frame_items = yeay_utils.clsboxes2list(i, cls_boxes)
                     if len(frame_items) > 0:
                         output_json["items"].extend(frame_items)
+                    else:
+                        output_json["items"].append([])
+                    output_json["blur_scores"].append(bs)
                     # output to video if desired
                     if args.output_video:
                         frame_annotated = vis_utils.vis_one_image_opencv(frame,
