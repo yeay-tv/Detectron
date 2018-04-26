@@ -48,6 +48,8 @@ def find_best_frames(jsondata, N = 5, thresh=0.0, criteria="prob", smooth=False)
     top_K = np.zeros(shape=(K, num_frames, 6), dtype=float) # (K, num_frames, (score, cls_id, bbox))
 
     for item in items:
+        if not item:
+            continue
         frame_index = item[0] - 1
         cls_id = item[1]
         prob = item[2]
@@ -105,7 +107,11 @@ def find_best_frames_each_class(jsondata, thresh=0.0, criteria="prob*sqrt(area)"
 
     top_bboxes = [None] * num_classes
 
+    blur_scores = np.array(jsondata["blur_scores"]).flatten()
+
     for item in items:
+        if not item:
+            continue
         frame_index = item[0] - 1
         cls_id = item[1]
         prob = item[2]
@@ -115,7 +121,8 @@ def find_best_frames_each_class(jsondata, thresh=0.0, criteria="prob*sqrt(area)"
             continue
 
         area = np.float((bbox[2] - bbox[0]) * (bbox[3] - bbox[1])) / vid_area
-        score_curr = np.float(prob) * np.sqrt(area)
+        # calculate a score based on probability, area, and blurriness
+        score_curr = np.float(prob) * np.sqrt(area) * blur_scores[frame_index]
         score_top = top_classes[cls_id, 1]
         if score_curr > score_top:
             top_classes[cls_id, 0] = frame_index
@@ -133,3 +140,10 @@ def smoother(arr, win_len=9):
     else:
         arr_smooth = np.convolve(arr, win/win.sum(), 'same')
     return arr_smooth
+
+
+def normalize_blur_scores(blur_scores, f=np.sqrt):
+    """ take a list of lists and output a normalized list of lists """
+    blur_scores = np.array(blur_scores)
+    blur_scores = f(blur_scores / blur_scores.max())
+    return blur_scores.tolist()

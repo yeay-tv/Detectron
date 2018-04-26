@@ -53,6 +53,7 @@ import modeling.optimizer as optim
 import modeling.retinanet_heads as retinanet_heads
 import modeling.rfcn_heads as rfcn_heads
 import modeling.rpn_heads as rpn_heads
+from modeling.LaPlacianBlurDetect import build_laplacian
 import roi_data.minibatch
 import utils.c2 as c2_utils
 
@@ -164,6 +165,11 @@ def build_generic_detection_model(
         """Build the model on a single GPU. Can be called in a loop over GPUs
         with name and device scoping to create a data parallel model.
         """
+        # Add LaPlacianBlurDetection
+        lp_blobs = build_laplacian(model)
+        for b in c2_utils.BlobReferenceList(lp_blobs):
+            model.StopGradient(b, b)
+
         # Add the conv body (called "backbone architecture" in papers)
         # E.g., ResNet-50, ResNet-50-FPN, ResNeXt-101-FPN, etc.
         blob_conv, dim_conv, spatial_scale_conv = add_conv_body_func(model)
@@ -410,7 +416,6 @@ def add_inference_inputs(model):
             for blob_in in op.input:
                 if not workspace.HasBlob(blob_in):
                     workspace.CreateBlob(blob_in)
-
     create_input_blobs_for_net(model.net.Proto())
     if cfg.MODEL.MASK_ON:
         create_input_blobs_for_net(model.mask_net.Proto())

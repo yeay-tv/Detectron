@@ -20,6 +20,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from modeling.LaPlacianBlurDetect import get_lpm_weights
+
 from collections import OrderedDict
 import cPickle as pickle
 import logging
@@ -65,6 +67,11 @@ def initialize_gpu_from_weights_file(model, weights_file, gpu_id=0):
         # Backwards compat--dictionary used to be only blobs, now they are
         # stored under the 'blobs' key
         src_blobs = src_blobs['blobs']
+    if not "mean_conv_w" in src_blobs:  # TODO: change to a config option
+        logger.info("manually adding laplacian blur detection weights...")
+        for bn in ["mean_conv_w", "lp_conv_w"]:
+            if bn not in src_blobs:
+                src_blobs[bn] = get_lpm_weights(bn)
     # Initialize weights on GPU gpu_id only
     unscoped_param_names = OrderedDict()  # Print these out in model order
     for blob in model.params:
@@ -83,7 +90,7 @@ def initialize_gpu_from_weights_file(model, weights_file, gpu_id=0):
             else:
                 src_name = unscoped_param_name
             if src_name not in src_blobs:
-                logger.info('{:s} not found'.format(src_name))
+                logger.info('{:s} not found. unscoped_name: {}'.format(src_name, unscoped_param_name))
                 continue
             dst_name = core.ScopedName(unscoped_param_name)
             has_momentum = src_name + '_momentum' in src_blobs
@@ -274,3 +281,22 @@ def configure_bbox_reg_weights(model, saved_cfg):
             'longer be used for training. To upgrade it to a trainable model '
             'please use fb/compat/convert_bbox_reg_normalized_model.py.'
         )
+
+
+def get_group_gn(dim):
+    """
+    get number of groups used by GroupNorm, based on number of channels
+    """
+    dim_per_gp = cfg.GROUP_NORM.DIM_PER_GP
+    num_groups = cfg.GROUP_NORM.NUM_GROUPS
+
+    assert dim_per_gp == -1 or num_groups == -1, \
+        "GroupNorm: can only specify G or C/G."
+
+    if dim_per_gp > 0:
+        assert dim % dim_per_gp == 0
+        group_gn = dim // dim_per_gp
+    else:
+        assert dim % num_groups == 0
+        group_gn = num_groups
+    return group_gn
