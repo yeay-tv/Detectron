@@ -194,14 +194,14 @@ def main(args):
             video_id = "noid"
         json_filename = os.path.join(args.output_dir, video_id + '.json')
         video_filename = os.path.join(args.output_dir, input_bn_noext + "_ann.avi")
-        print(json_filename)
+        logger.info(json_filename)
 
         if not os.path.exists(json_filename) or args.clobber:
             # opencv3 video file capture adopted from https://docs.opencv.org/3.0-beta/doc/py_tutorials/py_gui/py_video_display/py_video_display.html
             cap_dev = cv2.VideoCapture(input_src)
             input_w, input_h = int(cap_dev.get(3)), int(cap_dev.get(4))
             input_fps, input_fcnt = cap_dev.get(5), int(cap_dev.get(7))
-            print(input_w, input_h, input_fps, input_fcnt)
+            logger.info(input_w, input_h, input_fps, input_fcnt)
             assert isinstance(input_w, int) and isinstance(input_h, int)
 
             if args.output_video:
@@ -221,13 +221,14 @@ def main(args):
                 #"classifierWeights": args.weights,
                 "items":[],
             }
+            blur_scores = []
             i = 0
             while(cap_dev.isOpened()):
                 ret, frame = cap_dev.read()
                 if ret:
                     # debugging info
                     if i % int(input_fps) == 0:
-                        print("processing video at frame {} ({} seconds), ({})".format(i+1, i/input_fps, frame.shape))
+                        logger.info("frame {} ({} seconds), ({})".format(i+1, i/input_fps, frame.shape))
                     # rotate image if desired
                     if args.rotate:
                         frame = cv2.transpose(frame)
@@ -241,8 +242,9 @@ def main(args):
                     if len(frame_items) > 0:
                         output_json["items"].extend(frame_items)
                     else:
+                        logger.info("no items found in frame".format(i+1))
                         output_json["items"].append([])
-                    output_json["blur_scores"].append(bs)
+                    blur_scores.append(bs)
                     # output to video if desired
                     if args.output_video:
                         frame_annotated = vis_utils.vis_one_image_opencv(frame,
@@ -260,6 +262,8 @@ def main(args):
                     break
             # video classification complete
             output_json["classifiedAt"] = time.strftime("%Y-%m-%jT%H:%M:%S%Z")
+            # put blur_scores between 0, 1 and sqrt the result
+            output_json["blur_scores"] = yeay_utils.normalize_blur_scores(blur_scores)
             #print(type(cls_boxes), len(cls_boxes), output_json["items"][0], frame_items)
             output_json["top_N_frames"] = yeay_utils.find_best_frames(output_json)
             output_json["top_frames_each_class"] = yeay_utils.find_best_frames_each_class(output_json)
