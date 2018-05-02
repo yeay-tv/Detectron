@@ -144,6 +144,8 @@ def smoother(arr, win_len=9):
 
 def normalize_blur_scores(blur_scores, f=np.sqrt):
     """ take a list of lists and output a normalized list of lists """
+    if not blur_scores:
+        return []
     blur_scores = np.array(blur_scores)
     blur_scores = f(blur_scores / blur_scores.max())
     return blur_scores.tolist()

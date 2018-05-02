@@ -200,7 +200,7 @@ def main(args):
             # opencv3 video file capture adopted from https://docs.opencv.org/3.0-beta/doc/py_tutorials/py_gui/py_video_display/py_video_display.html
             cap_dev = cv2.VideoCapture(input_src)
             input_w, input_h = int(cap_dev.get(3)), int(cap_dev.get(4))
-            input_fps, input_fcnt = cap_dev.get(5), int(cap_dev.get(7))
+            input_fps, input_fcnt = float(cap_dev.get(5)), int(cap_dev.get(7))
             logger.info(input_w, input_h, input_fps, input_fcnt)
             assert isinstance(input_w, int) and isinstance(input_h, int)
 
