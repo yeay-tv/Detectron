@@ -56,9 +56,3 @@ def build_laplacian(model):
                         weight_init=('GivenTensorFill', {"values": laplacian_kernel}))
     blobs.append(lp_conv)
     return blobs
-
-def create_laplacian():
-    lpm = model_helper.ModelHelper(name="laplacianblur", arg_scope={"order": "NCHW"})
-    brew.conv(lpm, "data", "mean_conv", 3, 1, 1, weight_init=('ConstantFill', {"value": 1. / 3.}), no_bias=True)
-    brew.conv(lpm, "mean_conv", "lp_conv", 1, 1, 3, weight_init=('GivenTensorFill', {"values": laplacian_kernel}), no_bias=True)
-    return lpm
