@@ -166,9 +166,10 @@ def build_generic_detection_model(
         with name and device scoping to create a data parallel model.
         """
         # Add LaPlacianBlurDetection
-        lp_blobs = build_laplacian(model)
-        for b in c2_utils.BlobReferenceList(lp_blobs):
-            model.StopGradient(b, b)
+        if not model.train:
+            lp_blobs = build_laplacian(model)
+            for b in c2_utils.BlobReferenceList(lp_blobs):
+                model.StopGradient(b, b)
 
         # Add the conv body (called "backbone architecture" in papers)
         # E.g., ResNet-50, ResNet-50-FPN, ResNeXt-101-FPN, etc.
