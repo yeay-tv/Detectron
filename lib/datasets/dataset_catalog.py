@@ -208,6 +208,6 @@ DATASETS = {
         IM_DIR:
             '',
         ANN_FN:
-            _DATA_DIR + '/yeay/acf.new.json'
+            _DATA_DIR + '/yeay/acf.20180502.json'
     }
 }
