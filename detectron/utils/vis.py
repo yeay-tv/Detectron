@@ -387,3 +387,128 @@ def vis_one_image(
     output_name = os.path.basename(im_name) + '.' + ext
     fig.savefig(os.path.join(output_dir, '{}'.format(output_name)), dpi=dpi)
     plt.close('all')
+
+def vis_json_classes(jsonfile, classes, threshold=0.7, output_path="output.jpg", output_size=(40, 10)):
+    num_classes = len(classes)
+    raw = json.load(open(jsonfile, 'r'))
+    video_loc = raw["video_loc"]
+    data = raw["items"]
+    last_frame_num = data[-1][0]
+    K = 30
+    top_K = np.zeros((last_frame_num, K, 6), dtype=float) # (num_frames, top X, (score, class))
+    class_counts = np.zeros((last_frame_num, num_classes), dtype=int)
+    for item in data:
+        frame_num = item[0] - 1
+        cls_id = item[1]
+        score = item[2]
+        bbox = item[3]
+
+        # top K
+        items_in_frame = np.count_nonzero(top_K[frame_num, :, 0])
+        min_in_frame_pos = top_K[frame_num, :, 0].argmin() if items_in_frame == K else items_in_frame
+        if score > top_K[frame_num, min_in_frame_pos, 0]:
+            top_K[frame_num, min_in_frame_pos, 0] = score
+            top_K[frame_num, min_in_frame_pos, 1] = cls_id
+            top_K[frame_num, min_in_frame_pos, 2:] = bbox
+
+        # class counts
+        if score > threshold:
+            class_counts[frame_num, cls_id] += 1
+
+    top_K_sort_idx = np.argsort(-top_K[:,:,0], axis=1)  # (frame_num, 30)
+    top_K = top_K[np.arange(top_K.shape[0])[:,np.newaxis], top_K_sort_idx]
+    plt.figure(figsize=output_size)
+    plt.plot(top_K[:,:,0].sum(axis=1))
+    plt.savefig(output_path.replace(".png", "_prob.png"))
+    #print(top_K.shape, top_K[-100, :10])
+
+    # get max for each class. if 0 then that class was not in video and we will
+    # trim it.
+    class_max = class_counts.max(axis=0)
+    class_max_idx = np.where(class_max > 0)[0]
+    class_counts_trim = class_counts[:, class_max_idx]
+    class_names_trim = np.array(classes)[class_max_idx].tolist()
+    #print(class_counts_trim.shape, class_names_trim)
+
+    plt.figure(figsize=output_size)
+    plt.plot(class_counts_trim)
+    plt.legend(class_names_trim)
+    plt.savefig(output_path)
+
+    M = 11
+    win = np.hanning(M)[1:-1]  # numpy windows have zeros on end
+    if class_counts_trim.ndim > 1:
+        rolling_means = np.array([np.convolve(cct, win/win.sum(), 'same') for cct in class_counts_trim.T]).T
+    else:
+        rolling_means = np.convolve(class_counts_trim, win/win.sum(), 'same')
+    plt.figure(figsize=output_size)
+    plt.plot(rolling_means)
+    plt.legend(class_names_trim)
+    plt.savefig(output_path.replace('.png', '_rm.png'))
+    #print("Rolling Means: {}-{} ({})".format(rolling_means.min(), rolling_means.max(), rolling_means.shape))
+
+    N = 5
+    rolling_sums = rolling_means.sum(axis=1)
+    top_N_frames = rolling_sums.argsort()[::-1][:N]
+
+    vis_capture_frames(video_loc, rolling_sums.argsort()[::-1][:N],
+                       top_K, threshold, os.path.dirname(output_path), "rm_top_frames")
+    vis_capture_frames(video_loc, top_K[:,:,0].sum(axis=1).argsort()[::-1][:N],
+                       top_K, threshold, os.path.dirname(output_path), "prob_top_frames")
+
+def vis_capture_frames(video_loc, frames_list, top_K, threshold=0.9, output_dir='.', prefix="frames"):
+    cap = cv2.VideoCapture(video_loc)
+    top_K_frames = []
+    for i, frame_num in enumerate(frames_list):
+        cap.set(cv2.CAP_PROP_POS_FRAMES, frame_num)
+        ret, frame = cap.read()
+        if ret:
+            output_filename = os.path.join(output_dir, "output_{}_{}_{}.jpg".format(prefix, i, frame_num))
+            cv2.imwrite(output_filename, frame)
+            tkf = top_K[frame_num]
+            for j, crop_info in enumerate(tkf[tkf[:, 0] > threshold,:]):
+                crop_filename = os.path.join(output_dir, "output_crop_{}_{}.jpg".format(frame_num, j))
+                bbox = crop_info[2:].astype(int).tolist()
+                #print(bbox)
+                frame_cropped = frame[bbox[1]:bbox[3], bbox[0]:bbox[2]]
+                cv2.imwrite(crop_filename, frame_cropped)
+
+    cap.release()
+
+def crop_top_box(img, bbox, output_dir="/tmp", score=None, x1y1x2y2=True):
+    if x1x1y1x2y2:
+        x1, y1, x2, y2 = bbox
+    else:
+        x, y, w, h = bbox
+        x1, y1, x2, y2 = x, y, x+w, y+h
+    img_cropped = img[y1:y2, x1:x2]
+    score_str = "" if score is None else "_{}".format(score)
+    output_filename = os.path.join(output_dir, "crop{}.jpg".format(score_str))
+    cv2.imwrite(output_filename, img_cropped)
+
+def vis_capture_frames_lists(output_json, key_frames_dict, crop_bboxes=False, output_dir='.'):
+    vid = output_json["video_id"]
+    video_loc = output_json["video_loc"]
+    video_frames_dir = os.path.join(output_dir, vid)
+    if not os.path.exists(video_frames_dir):
+        os.makedirs(video_frames_dir)
+    cap = cv2.VideoCapture(video_loc)
+    if crop_bboxes:
+        tcf, tcf_bboxes = output_json["top_frames_each_class"]
+
+    for frame_num, prefixes in key_frames_dict.items():
+        cap.set(cv2.CAP_PROP_POS_FRAMES, frame_num)
+        ret, frame = cap.read()
+        if ret:
+            if crop_bboxes:
+                cls_ids_in_frame = [i for i, f in enumerate(tcf) if f == frame_num]
+                for i in cls_ids_in_frame:
+                    bbox = [int(x) for x in tcf_bboxes[i]]
+                    x1, y1, x2, y2 = bbox
+                    frame_crop = frame[y1:y2, x1:x2]
+                    output_filename = os.path.join(video_frames_dir, "{}_cropped_{:03d}_{}.jpg".format(vid, i, frame_num))
+                    cv2.imwrite(output_filename, frame_crop)
+            for prefix in prefixes:
+                output_filename = os.path.join(video_frames_dir, "{}_{}_{}.jpg".format(vid, prefix, frame_num))
+                cv2.imwrite(output_filename, frame)
+    cap.release()
