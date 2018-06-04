@@ -221,7 +221,7 @@ def main(args):
             cap_dev = cv2.VideoCapture(input_src)
             input_w, input_h = int(cap_dev.get(3)), int(cap_dev.get(4))
             input_fps, input_fcnt = cap_dev.get(5), int(cap_dev.get(7))
-            logger.info(input_w, input_h, input_fps, input_fcnt)
+            logger.info(input_w, input_h, float(input_fps), input_fcnt)
             assert isinstance(input_w, int) and isinstance(input_h, int)
 
             if args.output_video:
@@ -248,7 +248,7 @@ def main(args):
                 if ret:
                     # debugging info
                     if i % int(input_fps) == 0:
-                        logger.info("frame {} ({} seconds), ({})".format(i+1, i/input_fps, frame.shape))
+                        logger.info("frame {} ({:.2f} seconds), ({})".format(i+1, float(i)/float(input_fps), frame.shape))
                     # rotate image if desired
                     if args.rotate:
                         frame = cv2.transpose(frame)
