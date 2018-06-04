@@ -8,11 +8,12 @@ ENV PYTHONPATH /usr/local/caffe2_build:${PYTHONPATH}
 ENV LD_LIBRARY_PATH /usr/local/caffe2_build/lib:${LD_LIBRARY_PATH}
 
 # Clone the Detectron repository and link datasets
-RUN git clone --branch yeay https://github.com/yeay-tv/detectron /detectron
-RUN ln -s /datasets/yeay /detectron/lib/datasets/data/yeay
+RUN git clone --branch yeay_newstruc https://github.com/yeay-tv/detectron /detectron
+RUN ln -s /datasets/yeay /detectron/detectron/datasets/data/yeay
 
 # Install Python dependencies
 RUN pip install -r /detectron/requirements.txt
+RUN pip install tqdm
 
 # Install the COCO API
 RUN git clone https://github.com/cocodataset/cocoapi.git /cocoapi
