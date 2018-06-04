@@ -203,27 +203,27 @@ _DATASETS = {
             _DATA_DIR + '/VOC2012/VOCdevkit2012'
     },
     'minidataset': {
-        IM_DIR:
+        _IM_DIR:
             _DATA_DIR + '/minidataset/JPEGImages',
-        ANN_FN:
+        _ANN_FN:
             _DATA_DIR + '/minidataset/annotations_coco_format.json'
     },
     'visualgenome': {
-        IM_DIR:
+        _IM_DIR:
             '',
-        ANN_FN:
+        _ANN_FN:
             _DATA_DIR + '/visualgenome/annotations_coco_format.json'
     },
     'visualgenome_new': {
-        IM_DIR:
+        _IM_DIR:
             _DATA_DIR + '/visualgenome/Images',
-        ANN_FN:
+        _ANN_FN:
             _DATA_DIR + '/visualgenome/acf.new.json'
     },
     'yeay': {
-        IM_DIR:
+        _IM_DIR:
             _DATA_DIR + '/visualgenome/Images',
-        ANN_FN:
+        _ANN_FN:
             _DATA_DIR + '/yeay/acf.20180502.json'
     }
 }
