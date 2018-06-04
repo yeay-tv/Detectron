@@ -21,5 +21,13 @@ s3fs -o allow_other -o umask=0002 yeay-user-data-eu /home/ubuntu/datasets/yeay/s
 nvidia-docker run -v ~/datasets/yeay:/datasets/yeay -u `id -u ubuntu`:`id -g ubuntu` --rm -it yeay-tv-fb-detectron python tools/get_remote_videos.py
 
 # 3)
-nvidia-docker run -v ~/datasets/yeay:/datasets/yeay --rm -it yeay-tv-fb-detectron python tools/infer_yeay_production.py
+nvidia-docker run -v ~/datasets/yeay:/datasets/yeay -v ~/datasets/visualgenome:/datasets/visualgenome --rm -it yeay-tv-fb-detectron python tools/infer_yeay_production.py
+```
+
+# Cleanup
+
+To remove old images after building (or rebuilding), run the following command
+
+```sh
+docker rmi $(docker images --filter "dangling=true" -q --no-trunc)
 ```

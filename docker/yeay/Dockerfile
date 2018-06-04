@@ -8,7 +8,7 @@ ENV PYTHONPATH /usr/local/caffe2_build:${PYTHONPATH}
 ENV LD_LIBRARY_PATH /usr/local/caffe2_build/lib:${LD_LIBRARY_PATH}
 
 # Clone the Detectron repository and link datasets
-RUN git clone --branch yeay_newstruc https://github.com/yeay-tv/detectron /detectron
+RUN git clone --branch yeay https://github.com/yeay-tv/detectron /detectron
 RUN ln -s /datasets/yeay /detectron/detectron/datasets/data/yeay
 RUN ln -s /datasets/visualgenome /detectron/detectron/datasets/data/visualgenome
 
@@ -36,5 +36,3 @@ ADD visgen-c37-production.tar.gz /models
 #    useradd --uid 1000 --gid 1000 -d /home/ubuntu -s /bin/sh ubuntu
 #RUN chown 1000:1000 -R /cocoapi /detectron /models
 #USER ubuntu
-
-#RUN python tools/infer_yeay_production.py --cfg configs/yeay/visgen_cat37_faster_rcnn_R-50-FPN.yaml --output-dir /datasets/yeay/output --input-src /datasets/yeay/videos/Pks2RQhXu9_c3fab014-4b22-488c-b0a1-46453fdc579f.mp4 --dataset yeay --wts /models/visgen-c37-production/train/yeay/generalized_rcnn/model_final.pkl --thresh 0.4
