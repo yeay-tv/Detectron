@@ -10,6 +10,7 @@ ENV LD_LIBRARY_PATH /usr/local/caffe2_build/lib:${LD_LIBRARY_PATH}
 # Clone the Detectron repository and link datasets
 RUN git clone --branch yeay_newstruc https://github.com/yeay-tv/detectron /detectron
 RUN ln -s /datasets/yeay /detectron/detectron/datasets/data/yeay
+RUN ln -s /datasets/visualgenome /detectron/detectron/datasets/data/visualgenome
 
 # Install Python dependencies
 RUN pip install -r /detectron/requirements.txt
