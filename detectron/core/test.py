@@ -743,7 +743,7 @@ def im_detect_yeay(model, im, box_proposals, timers=None):
     if cfg.YEAY.BLUR_DETECT:
         blur_score = im_detect_blur()
     else:
-        blur_score = None
+        blur_score = [[1.]]
 
     return cls_boxes, cls_segms, cls_keyps, blur_score
 
