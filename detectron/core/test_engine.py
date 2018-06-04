@@ -34,7 +34,7 @@ from detectron.core.config import cfg
 from detectron.core.config import get_output_dir
 from detectron.core.rpn_generator import generate_rpn_on_dataset
 from detectron.core.rpn_generator import generate_rpn_on_range
-from detectron.core.test import im_detect_all
+from detectron.core.test import im_detect_all, im_detect_bbox, im_detect_bbox_aug, im_detect_yeay
 from detectron.datasets import task_evaluation
 from detectron.datasets.json_dataset import JsonDataset
 from detectron.modeling import model_builder

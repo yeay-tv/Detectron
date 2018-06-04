@@ -31,6 +31,7 @@ import yaml
 from caffe2.python import core
 from caffe2.python import workspace
 
+from detectron.modeling.LaPlacianBlurDetect import get_lpm_weights
 from detectron.core.config import cfg
 from detectron.core.config import load_cfg
 from detectron.utils.io import save_object
@@ -67,7 +68,11 @@ def initialize_gpu_from_weights_file(model, weights_file, gpu_id=0):
         # Backwards compat--dictionary used to be only blobs, now they are
         # stored under the 'blobs' key
         src_blobs = src_blobs['blobs']
-    # Initialize weights on GPU gpu_id only
+    if not "mean_conv_w" in src_blobs:  # TODO: change to a config option
+        logger.info("manually adding laplacian blur detection weights...")
+        for bn in ["mean_conv_w", "lp_conv_w"]:
+            if bn not in src_blobs:
+                src_blobs[bn] = get_lpm_weights(bn)    # Initialize weights on GPU gpu_id only
     unscoped_param_names = OrderedDict()  # Print these out in model order
     for blob in model.params:
         unscoped_param_names[c2_utils.UnscopeName(str(blob))] = True

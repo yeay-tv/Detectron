@@ -718,6 +718,36 @@ def im_detect_keypoints_aspect_ratio(
     return heatmaps_ar
 
 
+def im_detect_blur():
+    """This function will retrieve the LaPlacianBlur blob from our network and then
+        calculate the variance in the HxW dimensions.
+
+        Higher Variance = More Focused
+        Lower Variance = Blurrier
+
+    Notes:
+        lp_conv (NxCxHxW): output of laplacian convolution (C = 1, when done on data not features)
+        blur_score (NxC): returns a list of the total variances across the batched H and W area.
+            Notably, this does not correct for any padding that Detectron may add when using
+            inputs of different dimensions.
+    """
+    lp_conv_out = workspace.FetchBlob(core.ScopedName("lp_conv"))
+    blur_score = np.var(lp_conv_out, axis=(2,3))
+    return blur_score.tolist()
+
+
+def im_detect_yeay(model, im, box_proposals, timers=None):
+
+    cls_boxes, cls_segms, cls_keyps = im_detect_all(model, im, box_proposals, timers=None)
+
+    if cfg.YEAY.BLUR_DETECT:
+        blur_score = im_detect_blur()
+    else:
+        blur_score = None
+
+    return cls_boxes, cls_segms, cls_keyps, blur_score
+
+
 def combine_heatmaps_size_dep(hms_ts, ds_ts, us_ts, boxes, heur_f):
     """Combines heatmaps while taking object sizes into account."""
     assert len(hms_ts) == len(ds_ts) and len(ds_ts) == len(us_ts), \

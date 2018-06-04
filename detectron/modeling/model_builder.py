@@ -53,6 +53,7 @@ import detectron.modeling.optimizer as optim
 import detectron.modeling.retinanet_heads as retinanet_heads
 import detectron.modeling.rfcn_heads as rfcn_heads
 import detectron.modeling.rpn_heads as rpn_heads
+from detectron.modeling.LaPlacianBlurDetect import build_laplacian
 import detectron.roi_data.minibatch as roi_data_minibatch
 import detectron.utils.c2 as c2_utils
 
@@ -164,6 +165,12 @@ def build_generic_detection_model(
         """Build the model on a single GPU. Can be called in a loop over GPUs
         with name and device scoping to create a data parallel model.
         """
+        # Add LaPlacianBlurDetection
+        if not model.train:
+            lp_blobs = build_laplacian(model)
+            for b in c2_utils.BlobReferenceList(lp_blobs):
+                model.StopGradient(b, b)
+        
         # Add the conv body (called "backbone architecture" in papers)
         # E.g., ResNet-50, ResNet-50-FPN, ResNeXt-101-FPN, etc.
         blob_conv, dim_conv, spatial_scale_conv = add_conv_body_func(model)
