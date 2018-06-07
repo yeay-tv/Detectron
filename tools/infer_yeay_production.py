@@ -215,8 +215,13 @@ def main(args):
         json_filename = os.path.join(args.output_dir, video_id + '.json')
         video_filename = os.path.join(args.output_dir, input_bn_noext + "_ann.avi")
         logger.info(json_filename)
-
-        if not os.path.exists(json_filename) or args.clobber:
+        if os.path.exists(json_filename):
+            output_json = json.load(open(json_filename, 'r'))
+            already_detected = "items" in output_json
+        else:
+            output_json = {}
+            already_detected = False
+        if not already_detected or args.clobber:
             # opencv3 video file capture adopted from https://docs.opencv.org/3.0-beta/doc/py_tutorials/py_gui/py_video_display/py_video_display.html
             cap_dev = cv2.VideoCapture(input_src)
             input_w, input_h = int(cap_dev.get(3)), int(cap_dev.get(4))
@@ -228,19 +233,17 @@ def main(args):
                 fourcc = cv2.VideoWriter_fourcc(*[str(c) for c in 'XVID'])
                 vid_writer = cv2.VideoWriter(video_filename, fourcc, input_fps, (input_w,input_h))
 
-            output_json = {
-                "video_id": video_id,
-                "video_loc": input_src,
-                "video_dim": (input_w, input_h),
-                "video_fps": input_fps,
-                "video_fcnt": input_fcnt,
-                "classifiedAt": None,
-                "classesInDS": ds.classes,
-                "blur_scores": [],
-                #"classifierConfig": args.cfg,
-                #"classifierWeights": args.weights,
-                "items":[],
-            }
+            # this will overwrite any previous detections, but keep segmentations
+            output_json["video_id"] = video_id
+            output_json["video_loc"] = input_src
+            output_json["video_dim"] = (input_w, input_h)
+            output_json["video_fps"] = input_fps
+            output_json["video_fcnt"] = input_fcnt
+            output_json["classifiedAt"] = None
+            output_json["classesInDS"] = ds.classes
+            output_json["blur_scores"] = []
+            output_json["items"] = []
+
             blur_scores = []
             i = 0
             while(cap_dev.isOpened()):
