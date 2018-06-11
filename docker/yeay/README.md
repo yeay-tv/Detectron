@@ -15,6 +15,7 @@ The trained models are on Google drive (https://drive.google.com/drive/u/0/folde
 ```sh
 # 1)
 
+# edit /etc/fuse.conf if necessary to allow allow_other
 s3fs -o allow_other -o umask=0002 yeay-user-data-eu /home/ubuntu/datasets/yeay/s3/yeay-user-data-eu
 
 # 2)
@@ -22,6 +23,9 @@ nvidia-docker run -v ~/datasets/yeay:/datasets/yeay -u `id -u ubuntu`:`id -g ubu
 
 # 3)
 nvidia-docker run -v ~/datasets/yeay:/datasets/yeay -v ~/datasets/visualgenome:/datasets/visualgenome --rm -it yeay-tv-fb-detectron python tools/infer_yeay_production.py
+
+# 4)
+nvidia-docker run -v ~/datasets/yeay:/datasets/yeay -v ~/datasets/visualgenome:/datasets/visualgenome --rm -it yeay-tv-fb-detectron python tools/infer_video_segm.py --cfg configs/12_2017_baselines/e2e_mask_rcnn_R-50-FPN_2x.yaml --wts https://s3-us-west-2.amazonaws.com/detectron/35859007/12_2017_baselines/e2e_mask_rcnn_R-50-FPN_2x.yaml.01_49_07.By8nQcCH/output/train/coco_2014_train:coco_2014_valminusminival/generalized_rcnn/model_final.pkl --output-dir /datasets/yeay/output /datasets/yeay/video_url_list.json
 ```
 
 # Cleanup
