@@ -1,0 +1,172 @@
+{
+    "$schema": "http://json-schema.org/draft-03/schema#",
+    "id": "#",
+    "required": true,
+    "type": "object",
+    "properties": {
+        "video_fcnt": {
+            "id": "video_fcnt",
+            "required": true,
+            "type": "number"
+        },
+        "top_frames_each_class": {
+            "id": "top_frames_each_class",
+            "required": true,
+            "type": "array",
+            "items": {
+                "id": "0",
+                "required": true,
+                "type": "array",
+                "items": {
+                    "id": "0",
+                    "required": true,
+                    "type": "number"
+                }
+            }
+        },
+        "items": {
+            "id": "items",
+            "required": true,
+            "type": "array",
+            "items": {
+                "id": "0",
+                "required": true,
+                "type": "array",
+                "items": [
+                    {
+                        "id": "0",
+                        "required": true,
+                        "type": "number"
+                    },
+                    {
+                        "id": "1",
+                        "required": true,
+                        "type": "number"
+                    },
+                    {
+                        "id": "2",
+                        "required": true,
+                        "type": "number"
+                    },
+                    {
+                        "id": "3",
+                        "required": true,
+                        "type": "array",
+                        "items": {
+                            "id": "0",
+                            "required": true,
+                            "type": "number"
+                        }
+                    }
+                ]
+            }
+        },
+        "video_id": {
+            "id": "video_id",
+            "required": true,
+            "type": "string"
+        },
+        "video_loc": {
+            "id": "video_loc",
+            "required": true,
+            "type": "string"
+        },
+        "blur_scores": {
+            "id": "blur_scores",
+            "required": true,
+            "type": "array",
+            "items": {
+                "id": "0",
+                "required": true,
+                "type": "array",
+                "items": {
+                    "id": "0",
+                    "required": true,
+                    "type": "array",
+                    "items": {
+                        "id": "0",
+                        "required": true,
+                        "type": "number"
+                    }
+                }
+            }
+        },
+        "video_fps": {
+            "id": "video_fps",
+            "required": true,
+            "type": "number"
+        },
+        "coco_rle_masks": {
+            "id": "coco_rle_masks",
+            "required": false,
+            "type": "array",
+            "items": {
+                "id": "0",
+                "required": true,
+                "type": "array",
+                "items": {
+                    "id": "0",
+                    "required": true,
+                    "type": "array",
+                    "items": {
+                        "id": "0",
+                        "required": true,
+                        "type": "object",
+                        "properties": {
+                            "counts": {
+                                "id": "counts",
+                                "required": true,
+                                "type": "string"
+                            },
+                            "size": {
+                                "id": "size",
+                                "required": true,
+                                "type": "array",
+                                "items": {
+                                    "id": "0",
+                                    "required": true,
+                                    "type": "number"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "video_dim": {
+            "id": "video_dim",
+            "required": true,
+            "type": "array",
+            "items": {
+                "id": "0",
+                "required": true,
+                "type": "number"
+            }
+        },
+        "classesInDS": {
+            "id": "classesInDS",
+            "required": true,
+            "type": "array",
+            "items": {
+                "id": "0",
+                "required": true,
+                "type": "string"
+            }
+        },
+        "classifiedAt": {
+            "id": "classifiedAt",
+            "required": true,
+            "type": "string"
+        },
+        "top_N_frames": {
+            "id": "top_N_frames",
+            "required": true,
+            "type": "array",
+            "items": {
+                "id": "0",
+                "required": true,
+                "type": "number"
+            }
+        }
+    }
+}
